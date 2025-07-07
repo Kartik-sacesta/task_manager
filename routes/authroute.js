@@ -9,8 +9,10 @@ const {
   deleteUser,
   login,
 } = require("../controllers/authcontroller");
+const roleMiddleware = require("../middleware/rolemiddleware");
+const authmiddleware = require("../middleware/authmiddleware");
 
-router.post("/", register);
+router.post("/", authmiddleware,roleMiddleware,register);
 router.post("/login", login);
 
 router.get("/", getuser);

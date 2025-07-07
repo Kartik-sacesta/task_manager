@@ -2,8 +2,10 @@ const user = require("../model/User");
 const bcrypt = require("bcrypt");
 const jsonwebtoken = require("jsonwebtoken");
 
+const { createUserRole } = require("../service/user_role");
+
 const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, title } = req.body;
   if (!name || !email || !password) {
     return res
       .status(400)
@@ -22,10 +24,22 @@ const register = async (req, res) => {
       email,
       password: hashedPassword,
     });
+    if (!newUser) {
+      return res.status(500).json({ message: "User registration failed" });
+    }
+    const roleData = req.role_id;
+    console.log("role id", roleData, newUser.id);
 
+    createUserRole(newUser.id, roleData)
+      .then(() => {
+        console.log("User role created successfully");
+      })
+      .catch((error) => {
+        console.error("Error creating user role:", error);
+      });
     res
       .status(201)
-      .json({ message: "User registered successfully", user: newUser });
+      .json({ message: "User  registered successfully", user: newUser });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -34,38 +48,41 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   const { email, password } = req.body;
-    if (!email || !password) {
+  if (!email || !password) {
     return res
       .status(400)
       .json({ message: "Please provide email and password" });
-    }
-    try {
+  }
+  try {
     const existingUser = await user.findOne({ where: { email } });
     if (!existingUser) {
       return res.status(400).json({ message: "Invalid email or password" });
-    }   
-    const isPasswordValid = await bcrypt.compare(password, existingUser.password);
+    }
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      existingUser.password
+    );
     if (!isPasswordValid) {
-        return res.status(400).json({ message: "Invalid email or password" });
+      return res.status(400).json({ message: "Invalid email or password" });
     }
     if (!existingUser.is_active) {
-        return res.status(400).json({ message: "User is inactive" });
-        }
+      return res.status(400).json({ message: "User is inactive" });
+    }
 
-       const token = jsonwebtoken.sign(
+    const token = jsonwebtoken.sign(
       { id: existingUser.id, email: existingUser.email },
-        process.env.JWT_SECRET ,
+      process.env.JWT_SECRET,
       { expiresIn: "1h" }
-    ); 
+    );
     res.status(200).json({
-      message: "Login successful",  
+      message: "Login successful",
       token,
     });
-  } catch (error) { 
+  } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
-    }
-}
+  }
+};
 
 const getuser = async (req, res) => {
   try {
@@ -145,5 +162,5 @@ module.exports = {
   getUserById,
   updateUser,
   deleteUser,
-    login
+  login,
 };

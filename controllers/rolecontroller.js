@@ -19,43 +19,7 @@ const createRole = async (req, res) => {
   }
 };
 
-const createUserRole = async (req, res) => {
-  const { user_id, role_id } = req.body;
-  const foundUser = await user.findOne({
-    where: { id: user_id, is_active: true },
-  });
-  if (!foundUser) {
-    return res.status(404).json({ message: "User not found" });
-  }
-  const foundRole = await roles.findOne({
-    where: { id: role_id, is_active: true },
-  });
-  if (!foundRole) {
-    return res.status(404).json({ message: "Role not found" });
-  }
-  const existingUserRole = await user_roles.findOne({
-    where: { user_id, role_id },
-  });
-  if (existingUserRole) {
-    return res.status(400).json({ message: "User already has this role" });
-  }
-  if (!user_id || !role_id) {
-    return res
-      .status(400)
-      .json({ message: "User ID and Role ID are required" });
-  }
-  try {
-    const newUserRole = await user_roles.create({
-      user_id,
-      role_id,
-    });
 
-    res.status(201).json(newUserRole);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
 
 const getRoles = async (req, res) => {
   try {
@@ -120,5 +84,5 @@ module.exports = {
   getRoles,
   deleteRole,
   updateRole,
-  createUserRole,
+  
 };

@@ -24,6 +24,7 @@ const User_Role = sequelize.define(
         key: "id",
       },
       allowNull: false,
+      defaultValue: 2, 
     },
   },
   {
