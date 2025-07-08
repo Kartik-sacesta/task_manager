@@ -1,8 +1,11 @@
 const user = require("../model/User");
+const Role = require("../model/Role");
+const userRole = require("../model/User_Role");
 const bcrypt = require("bcrypt");
 const jsonwebtoken = require("jsonwebtoken");
 
 const { createUserRole } = require("../service/user_role");
+const { TIME } = require("sequelize");
 
 const register = async (req, res) => {
   const { name, email, password, title } = req.body;
@@ -72,7 +75,7 @@ const login = async (req, res) => {
     const token = jsonwebtoken.sign(
       { id: existingUser.id, email: existingUser.email },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "4 h" }
     );
     res.status(200).json({
       message: "Login successful",
@@ -86,12 +89,7 @@ const login = async (req, res) => {
 
 const getuser = async (req, res) => {
   try {
-    const users = await user.findAll();
-    users.forEach((user) => {
-      if (!user.is_active) {
-        user.is_active = false;
-      }
-    });
+    const users = await user.findAll({ where: { is_active: true } });
     res.status(200).json(users);
   } catch (error) {
     console.error(error);
@@ -156,6 +154,48 @@ const deleteUser = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+const tokenvalidate = async (req, res) => {
+  const { token } = req.body;
+  try {
+    const decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET);
+    if (!decoded) {
+      return res.status(403).json({ message: "token not found " });
+    }
+    const userdata = await user.findByPk(decoded.id);
+    if (!userdata || !userdata.is_active) {
+      return res.status(403).json({ message: "user not found " });
+    }
+    const expTime = new Date(decoded.exp * 1000);
+    const currentTime = new Date();
+    const timeUntilExpiry = expTime.getTime() - currentTime.getTime();
+
+    if (timeUntilExpiry == 0) {
+      return res.status(498).json({ message: "token expired " });
+    }
+
+    const userrole = await userRole.findOne({
+      where: { user_id: decoded.id },
+    });
+    if (!userrole) {
+      return res.status(403).json({ message: "User role not found" });
+    }
+
+    const role = await Role.findOne({
+      where: { id: userrole.role_id, is_active: true },
+    });
+    console.log(role);
+    const roletitle = role.title;
+    const username = userdata.name;
+    return res
+      .status(200)
+      .json({ message: "token validate", roletitle, username });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   register,
   getuser,
@@ -163,4 +203,5 @@ module.exports = {
   updateUser,
   deleteUser,
   login,
+  tokenvalidate,
 };

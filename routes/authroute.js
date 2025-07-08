@@ -8,6 +8,7 @@ const {
   updateUser,
   deleteUser,
   login,
+  tokenvalidate,
 } = require("../controllers/authcontroller");
 const roleMiddleware = require("../middleware/rolemiddleware");
 const authmiddleware = require("../middleware/authmiddleware");
@@ -19,5 +20,6 @@ router.get("/", getuser);
 router.get("/:id", getUserById);
 router.put("/:id", updateUser);
 router.delete("/:id", deleteUser);
+router.post("/me",tokenvalidate);
 
 module.exports = router;
