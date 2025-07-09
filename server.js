@@ -8,6 +8,7 @@ const { connectDB, sequelize } = require("./config/db");
 const authRoutes = require("./routes/authroute");
 const taskcontroller = require("./routes/taskroute");
 const rolecontroller = require("./routes/roleroute");
+const notificationRoutes = require('./routes/notificationroute');
 
 
 connectDB();
@@ -16,6 +17,7 @@ sequelize.sync({ force: false });
 app.use("/user", authRoutes);
 app.use("/task", taskcontroller);
 app.use("/role", rolecontroller);
+app.use('/notifications', notificationRoutes);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

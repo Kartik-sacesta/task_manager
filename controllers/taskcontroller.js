@@ -1,8 +1,9 @@
 const Task = require("../model/Task");
+const User=require("../model/User");
 
 
 const createTask = async (req, res) => {
-    const { title, description, created_by, expried_date,status } = req.body;
+    const { title, description, expried_date,status,priority } = req.body;
     
     if (!title ) {
         return res.status(400).json({ message: "Title and created_by are required" });
@@ -14,7 +15,8 @@ const createTask = async (req, res) => {
         description,
         created_by:req.user.id, 
         expried_date,
-        status: status || "pending", 
+        status: status || "pending",
+        priority 
         });
     
         res.status(201).json(newTask);
@@ -102,10 +104,14 @@ const updateTask = async (req, res) => {
     }
 }
 
+
+
+
 module.exports = {
     createTask, 
     getTasks,
     getTaskById,
     deleteTask,
-    updateTask
+    updateTask,
+
 };

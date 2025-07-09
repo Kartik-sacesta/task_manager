@@ -19,11 +19,11 @@ const Task = sequelize.define(
     },
     created_by: {
       type: DataTypes.INTEGER,
-        references: {
-            model: "users", 
-            key: "id",
-        },
-    allowNull: true,
+      references: {
+        model: "users",
+        key: "id",
+      },
+      allowNull: false,
     },
     expried_date: {
       type: DataTypes.DATE,
@@ -33,6 +33,11 @@ const Task = sequelize.define(
     status: {
       type: DataTypes.ENUM("pending", "in-progress", "completed"),
       defaultValue: "pending",
+    },
+    priority: {
+      type: DataTypes.ENUM("Low", "Medium", "High", "Urgent"),
+      defaultValue: "Medium",
+      
     },
     is_active: {
       type: DataTypes.BOOLEAN,
@@ -48,3 +53,6 @@ const Task = sequelize.define(
 );
 
 module.exports = Task;
+
+
+
