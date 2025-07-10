@@ -45,7 +45,7 @@ const deleteRole = async (req, res) => {
     if (!role) {
       return res.status(404).json({ message: "Role not found" });
     }
-
+    await role.destroy();
     await role.update({ is_active: false });
 
     res.status(200).json({ message: "Role deleted successfully" });

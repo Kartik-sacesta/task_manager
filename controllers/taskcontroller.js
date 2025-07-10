@@ -70,7 +70,7 @@ const deleteTask = async (req, res) => {
         if (!task) {
             return res.status(404).json({ message: "Task not found" });
         }
-        
+        await task.destroy();
         await task.update({ is_active: false });
         res.status(200).json({ message: "Task deleted successfully (soft delete)" });
     } catch (error) {

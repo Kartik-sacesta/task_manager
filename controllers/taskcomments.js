@@ -61,7 +61,7 @@ const deleteTaskComments = async (req, res) => {
           "Task Comment not found or you are not authorized to delete it",
       });
     }
-
+    await task_comments.destroy();
     await task_comments.update({ is_active: false });
     res.status(200).json({ message: "Task Comments deleted successfully " });
   } catch (error) {

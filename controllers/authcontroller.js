@@ -151,6 +151,7 @@ const deleteUser = async (req, res) => {
     if (!userData.is_active) {
       return res.status(400).json({ message: "User already deleted" });
     }
+    await userData.destroy();
     await userData.update({ is_active: false });
     res
       .status(200)
