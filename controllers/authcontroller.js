@@ -4,9 +4,9 @@ const userRole = require("../model/User_Role");
 const Task = require("../model/Task");
 const bcrypt = require("bcrypt");
 const jsonwebtoken = require("jsonwebtoken");
+const { Op } = require("sequelize");
 
 const { createUserRole } = require("../service/user_role");
-
 
 const register = async (req, res) => {
   const { name, email, password, title } = req.body;
@@ -102,6 +102,47 @@ const getuser = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+const getalluser = async (req, res) => {
+  try {
+    const userdata = {};
+
+    const [
+      userRoleDataForUsers,
+      userRoleDataForAdmins,
+      activeUsersCount,
+      inactiveUsersCount,
+    ] = await Promise.all([
+      userRole.findAll({
+        where: { role_id: 2 },
+        attributes: ["user_id"],
+        raw: true,
+      }),
+      userRole.findAll({
+        where: { role_id: 1 },
+        attributes: ["user_id"],
+        raw: true,
+      }),
+      user.count({ where: { is_active: true } }),
+      user.count({ where: { is_active: false } }),
+    ]);
+
+    const userIds = userRoleDataForUsers.map((ur) => ur.user_id);
+    const adminIds = userRoleDataForAdmins.map((ur) => ur.user_id);
+
+    userdata.usersactive = activeUsersCount;
+    userdata.usersinactive = inactiveUsersCount;
+    userdata.users = userIds.length;
+    userdata.admin = adminIds.length;
+
+    res.status(200).json(userdata);
+  } catch (error) {
+    console.error("Error in getalluser:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 const getUserById = async (req, res) => {
   const { id } = req.params;
   try {
@@ -213,7 +254,7 @@ const taskByUserId = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     const task = await Task.findAll({
-      where: { created_by: id ,is_active:true},
+      where: { created_by: id, is_active: true },
     });
 
     res.status(200).json({ message: "Task by User", task });
@@ -232,4 +273,5 @@ module.exports = {
   login,
   tokenvalidate,
   taskByUserId,
+  getalluser,
 };

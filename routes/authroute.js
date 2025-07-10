@@ -9,7 +9,8 @@ const {
   deleteUser,
   login,
   tokenvalidate,
-  taskByUserId
+  taskByUserId,
+  getalluser
 } = require("../controllers/authcontroller");
 const roleMiddleware = require("../middleware/rolemiddleware");
 const authmiddleware = require("../middleware/authmiddleware");
@@ -18,7 +19,9 @@ router.post("/",register);
 router.get("/task/:id",authmiddleware,roleMiddleware,taskByUserId);
 router.post("/login", login);
 
+
 router.get("/", getuser);
+router.get("/alluser",getalluser);
 router.get("/:id", getUserById);
 router.put("/:id", updateUser);
 router.delete("/:id", deleteUser);
