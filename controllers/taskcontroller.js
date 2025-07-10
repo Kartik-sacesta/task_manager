@@ -29,7 +29,7 @@ const createTask = async (req, res) => {
 
 const getTasks = async (req, res) => {
     try {
-        const userId = req.user.id; // Assuming the user ID is stored in req.user
+        const userId = req.user.id; 
         const tasks = await Task.findAll({
             where: { is_active: true  , created_by: userId },
             order: [['createdAt', 'DESC']]
