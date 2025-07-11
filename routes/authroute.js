@@ -7,7 +7,8 @@ const {
   getuser,
   updateUser,
   deleteUser,
-  login,
+  userlogin,
+  adminlogin,
   tokenvalidate,
   taskByUserId,
   getalluser,
@@ -17,7 +18,8 @@ const authmiddleware = require("../middleware/authmiddleware");
 
 router.post("/", register);
 router.get("/task/:id", authmiddleware, roleMiddleware, taskByUserId);
-router.post("/login", login);
+router.post("/login", userlogin);
+router.post("/adminlogin", adminlogin);
 
 router.get("/", getuser);
 router.get("/alluser", authmiddleware, roleMiddleware, getalluser);

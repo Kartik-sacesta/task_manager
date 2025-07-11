@@ -4,9 +4,10 @@ const userRole = require("../model/User_Role");
 const Task = require("../model/Task");
 const bcrypt = require("bcrypt");
 const jsonwebtoken = require("jsonwebtoken");
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 
 const { createUserRole } = require("../service/user_role");
+const User_Role = require("../model/User_Role");
 
 const register = async (req, res) => {
   const { name, email, password, title } = req.body;
@@ -50,7 +51,7 @@ const register = async (req, res) => {
   }
 };
 
-const login = async (req, res) => {
+const handlelogin = async (req, res, expectedrole) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res
@@ -59,6 +60,20 @@ const login = async (req, res) => {
   }
   try {
     const existingUser = await user.findOne({ where: { email } });
+    const userroleid = await User_Role.findOne({
+      where: {
+        id: existingUser.id,
+      },
+    });
+    const userrole = await Role.findOne({
+      where: {
+        id: userroleid.role_id,
+      },
+    });
+
+    if (userrole.title != expectedrole) {
+      return res.status(400).json({ message: "Invalid User" });
+    }
     if (!existingUser) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
@@ -264,14 +279,22 @@ const taskByUserId = async (req, res) => {
   }
 };
 
+const userlogin = async (req, res) => {
+  handlelogin(req, res, "User");
+};
+const adminlogin = async (req, res) => {
+  handlelogin(req, res, "Admin");
+};
+
 module.exports = {
   register,
   getuser,
   getUserById,
   updateUser,
   deleteUser,
-  login,
+  userlogin,
   tokenvalidate,
   taskByUserId,
   getalluser,
+  adminlogin,
 };
