@@ -19,7 +19,7 @@ const createTaskComments = async (req, res) => {
     res.status(201).json({ message: "Task Comment successfully", taskcomment });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 const getTaskComments = async (req, res) => {
@@ -41,7 +41,7 @@ const getTaskComments = async (req, res) => {
     res.status(200).json(taskcomment);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -66,7 +66,7 @@ const deleteTaskComments = async (req, res) => {
     res.status(200).json({ message: "Task Comments deleted successfully " });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 

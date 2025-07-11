@@ -46,7 +46,7 @@ const register = async (req, res) => {
       .json({ message: "User  registered successfully", user: newUser });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -84,7 +84,7 @@ const login = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -99,7 +99,7 @@ const getuser = async (req, res) => {
     res.status(200).json(users);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -126,7 +126,8 @@ const getalluser = async (req, res) => {
       user.count({ where: { is_active: true } }),
       user.count({ where: { is_active: false } }),
     ]);
-
+    const tmp = await user.count({ where: { is_active: false } });
+    console.log(tmp);
     const userIds = userRoleDataForUsers.map((ur) => ur.user_id);
     const adminIds = userRoleDataForAdmins.map((ur) => ur.user_id);
 
@@ -142,7 +143,6 @@ const getalluser = async (req, res) => {
   }
 };
 
-
 const getUserById = async (req, res) => {
   const { id } = req.params;
   try {
@@ -156,7 +156,7 @@ const getUserById = async (req, res) => {
     res.status(200).json(userData);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -178,7 +178,7 @@ const updateUser = async (req, res) => {
       .json({ message: "User updated successfully", user: updatedUser });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -192,14 +192,14 @@ const deleteUser = async (req, res) => {
     if (!userData.is_active) {
       return res.status(400).json({ message: "User already deleted" });
     }
-    await userData.destroy();
+    // await userData.destroy();
     await userData.update({ is_active: false });
     res
       .status(200)
       .json({ message: "User deleted successfully (soft delete)" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -240,7 +240,7 @@ const tokenvalidate = async (req, res) => {
       .json({ message: "token validate", roletitle, username });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -260,7 +260,7 @@ const taskByUserId = async (req, res) => {
     res.status(200).json({ message: "Task by User", task });
   } catch (e) {
     console.log(e);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 

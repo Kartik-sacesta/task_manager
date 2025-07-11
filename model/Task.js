@@ -37,7 +37,6 @@ const Task = sequelize.define(
     priority: {
       type: DataTypes.ENUM("Low", "Medium", "High", "Urgent"),
       defaultValue: "Medium",
-      
     },
     is_active: {
       type: DataTypes.BOOLEAN,
@@ -53,6 +52,3 @@ const Task = sequelize.define(
 );
 
 module.exports = Task;
-
-
-

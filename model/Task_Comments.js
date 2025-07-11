@@ -24,7 +24,7 @@ const Task_Comments = sequelize.define(
     },
 
     created_by: {
-      type: DataTypes.INTEGER, 
+      type: DataTypes.INTEGER,
       references: {
         model: "users",
         key: "id",

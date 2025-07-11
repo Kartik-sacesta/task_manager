@@ -17,7 +17,7 @@ const roleMiddleware = async (req, res, next) => {
     if (!role || role.title !== "Admin") {
       return res.status(403).json({ message: "Access denied" });
     }
-req.role_id=role.id;
+    req.role_id = role.id;
     next();
   } catch (error) {
     console.error(error);

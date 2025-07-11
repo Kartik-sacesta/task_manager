@@ -15,11 +15,9 @@ const createRole = async (req, res) => {
     res.status(201).json(newRole);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
-
 
 const getRoles = async (req, res) => {
   try {
@@ -30,7 +28,7 @@ const getRoles = async (req, res) => {
     res.status(200).json(allRoles);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -51,7 +49,7 @@ const deleteRole = async (req, res) => {
     res.status(200).json({ message: "Role deleted successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -75,7 +73,7 @@ const updateRole = async (req, res) => {
     res.status(200).json(updatedRole);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -84,5 +82,4 @@ module.exports = {
   getRoles,
   deleteRole,
   updateRole,
-  
 };

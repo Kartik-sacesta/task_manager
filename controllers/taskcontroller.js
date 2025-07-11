@@ -24,7 +24,7 @@ const createTask = async (req, res) => {
     res.status(201).json(newTask);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -39,7 +39,7 @@ const getTasks = async (req, res) => {
     res.status(200).json(tasks);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -53,11 +53,13 @@ const getTaskAnalytics = async (req, res) => {
       where: { is_active: true },
       raw: true,
     });
+    console.log(statusCounts);
 
     analyticsData.statusSummary = {};
     statusCounts.forEach((item) => {
       analyticsData.statusSummary[item.status] = parseInt(item.count, 10);
     });
+    console.log(analyticsData);
 
     const allStatuses = ["pending", "in-progress", "completed"];
     allStatuses.forEach((status) => {
@@ -232,7 +234,7 @@ const getTaskById = async (req, res) => {
     res.status(200).json(task);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -254,7 +256,7 @@ const deleteTask = async (req, res) => {
       .json({ message: "Task deleted successfully (soft delete)" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 const updateTask = async (req, res) => {
@@ -279,7 +281,7 @@ const updateTask = async (req, res) => {
     res.status(200).json(updatedTask);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 

@@ -33,10 +33,9 @@ const User = sequelize.define(
   {
     timestamps: true,
     tableName: "users",
-    paranoid: true, 
+    paranoid: true,
     deletedAt: "deletedAt",
   }
 );
-
 
 module.exports = User;
