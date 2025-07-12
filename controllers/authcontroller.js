@@ -9,6 +9,7 @@ const { Op, where } = require("sequelize");
 const { createUserRole } = require("../service/user_role");
 const User_Role = require("../model/User_Role");
 
+const admin = require("../config/firebaseAdmin");
 const register = async (req, res) => {
   const { name, email, password, title } = req.body;
   if (!name || !email || !password) {
@@ -28,6 +29,7 @@ const register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      is_active: true,
     });
     if (!newUser) {
       return res.status(500).json({ message: "User registration failed" });
@@ -44,7 +46,7 @@ const register = async (req, res) => {
       });
     res
       .status(201)
-      .json({ message: "User  registered successfully", user: newUser });
+      .json({ message: "User registered successfully", user: newUser });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error", error: error.message });
@@ -60,23 +62,17 @@ const handlelogin = async (req, res, expectedrole) => {
   }
   try {
     const existingUser = await user.findOne({ where: { email } });
-    const userroleid = await User_Role.findOne({
-      where: {
-        id: existingUser.id,
-      },
-    });
-    const userrole = await Role.findOne({
-      where: {
-        id: userroleid.role_id,
-      },
-    });
 
-    if (userrole.title != expectedrole) {
-      return res.status(400).json({ message: "Invalid User" });
-    }
     if (!existingUser) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
+
+    if (existingUser.password === null || existingUser.password === undefined) {
+      return res
+        .status(400)
+        .json({ message: "Please use Google Sign-In for this account." });
+    }
+
     const isPasswordValid = await bcrypt.compare(
       password,
       existingUser.password
@@ -86,6 +82,26 @@ const handlelogin = async (req, res, expectedrole) => {
     }
     if (!existingUser.is_active) {
       return res.status(400).json({ message: "User is inactive" });
+    }
+
+    const userRoleIdEntry = await User_Role.findOne({
+      where: {
+        user_id: existingUser.id,
+      },
+    });
+
+    if (!userRoleIdEntry) {
+      return res.status(400).json({ message: "User role not assigned." });
+    }
+
+    const userRole = await Role.findOne({
+      where: {
+        id: userRoleIdEntry.role_id,
+      },
+    });
+
+    if (!userRole || userRole.title !== expectedrole) {
+      return res.status(400).json({ message: "Invalid User Role" });
     }
 
     const token = jsonwebtoken.sign(
@@ -100,6 +116,83 @@ const handlelogin = async (req, res, expectedrole) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+const googleLogin = async (req, res) => {
+  const { idToken } = req.body;
+
+  if (!idToken) {
+    return res.status(400).json({ message: "Google ID token is required." });
+  }
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const { email, name, uid } = decodedToken;
+
+    let existingUser = await user.findOne({ where: { email } });
+
+    if (!existingUser) {
+      existingUser = await user.create({
+        name: name || email.split("@")[0],
+        email: email,
+        password: null,
+        is_active: true,
+        google_uid: uid,
+      });
+
+      if (!existingUser) {
+        return res
+          .status(500)
+          .json({ message: "User creation failed after Google login." });
+      }
+
+      const defaultRoleId = 2;
+      await createUserRole(existingUser.id, defaultRoleId);
+      console.log(
+        `New Google user ${email} registered with role ${defaultRoleId}.`
+      );
+    } else {
+        if (!existingUser.is_active) {
+          await existingUser.update({ is_active: true });
+        }
+
+      if (existingUser.name !== name) {
+        await existingUser.update({ name: name });
+      }
+
+      if (!existingUser.google_uid) {
+        await existingUser.update({ google_uid: uid });
+      }
+      console.log(`Existing user ${email} logged in via Google.`);
+    }
+
+    const appToken = jsonwebtoken.sign(
+      { id: existingUser.id, email: existingUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "4 h" }
+    );
+
+    res.status(200).json({
+      message: "Google login successful",
+      token: appToken,
+      user: {
+        id: existingUser.id,
+        name: existingUser.name,
+        email: existingUser.email,
+      },
+    });
+  } catch (error) {
+    console.error("Error during Google login:", error);
+    if (error.code === "auth/id-token-expired") {
+      return res
+        .status(401)
+        .json({ message: "Google ID token expired. Please sign in again." });
+    }
+    return res.status(500).json({
+      message: "Server error during Google login",
+      error: error.message,
+    });
   }
 };
 
@@ -122,12 +215,7 @@ const getalluser = async (req, res) => {
   try {
     const userdata = {};
 
-    const [
-      userRoleDataForUsers,
-      userRoleDataForAdmins,
-      activeUsersCount,
-      inactiveUsersCount,
-    ] = await Promise.all([
+    const [userRoleDataForUsers, userRoleDataForAdmins] = await Promise.all([
       userRole.findAll({
         where: { role_id: 2 },
         attributes: ["user_id"],
@@ -138,26 +226,37 @@ const getalluser = async (req, res) => {
         attributes: ["user_id"],
         raw: true,
       }),
-      user.count({ where: { is_active: true } }),
-      user.count({ where: { is_active: false } }),
     ]);
-    const tmp = await user.count({ where: { is_active: false } });
-    console.log(tmp);
+
     const userIds = userRoleDataForUsers.map((ur) => ur.user_id);
     const adminIds = userRoleDataForAdmins.map((ur) => ur.user_id);
+    const user2 = await user.findOne({ where: { id: 2 } });
+    console.log(user2);
 
-    userdata.usersactive = activeUsersCount;
-    userdata.usersinactive = inactiveUsersCount;
+    const [
+      activeUsersCount,
+      inactiveUsersCount,
+      activeAdminsCount,
+      inactiveAdminsCount,
+    ] = await Promise.all([
+      user.count({ where: { id: { [Op.in]: userIds }, is_active: true } }),
+      user.count({ where: { id: { [Op.in]: userIds }, is_active: false } }),
+      user.count({ where: { id: { [Op.in]: adminIds }, is_active: true } }),
+      user.count({ where: { id: { [Op.in]: adminIds }, is_active: false } }),
+    ]);
     userdata.users = userIds.length;
     userdata.admin = adminIds.length;
+    userdata.usersactive = activeUsersCount;
+    userdata.usersinactive = inactiveUsersCount;
+    userdata.adminactive = activeAdminsCount;
+    userdata.admininactive = inactiveAdminsCount;
 
     res.status(200).json(userdata);
   } catch (error) {
     console.error("Error in getalluser:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 const getUserById = async (req, res) => {
   const { id } = req.params;
   try {
@@ -183,11 +282,13 @@ const updateUser = async (req, res) => {
     if (!userData) {
       return res.status(404).json({ message: "User not found" });
     }
-    const updatedUser = await userData.update({
-      name,
-      email,
-      password: password ? await bcrypt.hash(password, 10) : userData.password,
-    });
+    // Only update password if provided and not null
+    const updateFields = { name, email };
+    if (password) {
+      updateFields.password = await bcrypt.hash(password, 10);
+    }
+
+    const updatedUser = await userData.update(updateFields);
     res
       .status(200)
       .json({ message: "User updated successfully", user: updatedUser });
@@ -207,7 +308,7 @@ const deleteUser = async (req, res) => {
     if (!userData.is_active) {
       return res.status(400).json({ message: "User already deleted" });
     }
-    // await userData.destroy();
+    // await userData.destroy(); // Use soft delete as per original code
     await userData.update({ is_active: false });
     res
       .status(200)
@@ -233,7 +334,10 @@ const tokenvalidate = async (req, res) => {
     const currentTime = new Date();
     const timeUntilExpiry = expTime.getTime() - currentTime.getTime();
 
-    if (timeUntilExpiry == 0) {
+    // Check if timeUntilExpiry is less than or equal to a small threshold (e.g., 1 second)
+    // as it might not be exactly 0 due to floating point precision or immediate expiry
+    if (timeUntilExpiry <= 1000) {
+      // Check if less than or equal to 1 second
       return res.status(498).json({ message: "token expired " });
     }
 
@@ -247,6 +351,9 @@ const tokenvalidate = async (req, res) => {
     const role = await Role.findOne({
       where: { id: userrole.role_id, is_active: true },
     });
+    if (!role) {
+      return res.status(403).json({ message: "Role not found or inactive" });
+    }
     console.log(role);
     const roletitle = role.title;
     const username = userdata.name;
@@ -255,7 +362,14 @@ const tokenvalidate = async (req, res) => {
       .json({ message: "token validate", roletitle, username });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ message: "Server error", error: error.message });
+    // Handle specific JWT errors
+    if (e.name === "TokenExpiredError") {
+      return res.status(498).json({ message: "token expired " });
+    }
+    if (e.name === "JsonWebTokenError") {
+      return res.status(403).json({ message: "Invalid token" });
+    }
+    res.status(500).json({ message: "Server error", error: e.message });
   }
 };
 
@@ -275,7 +389,7 @@ const taskByUserId = async (req, res) => {
     res.status(200).json({ message: "Task by User", task });
   } catch (e) {
     console.log(e);
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ message: "Server error", error: e.message });
   }
 };
 
@@ -297,4 +411,5 @@ module.exports = {
   taskByUserId,
   getalluser,
   adminlogin,
+  googleLogin, // Export the new function
 };
