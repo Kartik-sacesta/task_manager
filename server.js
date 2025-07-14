@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const cors = require("cors");
-app.use(cors());
+
 app.use(express.json());
 const { connectDB, sequelize } = require("./config/db");
 const authRoutes = require("./routes/authroute");
@@ -12,6 +12,29 @@ const taskcommentsroute = require("./routes/taskcommentsroute");
 
 connectDB();
 sequelize.sync({ force: false });
+
+
+
+
+  //
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'https://task-manager-frontend-plum.vercel.app', 
+      ''
+    ];
+ app.use(cors({
+      origin: function (origin, callback) {
+       
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
+      credentials: true, 
+      allowedHeaders: ['Content-Type', 'Authorization'], 
+    }));
 
 app.use("/user", authRoutes);
 app.use("/task", taskcontroller);
