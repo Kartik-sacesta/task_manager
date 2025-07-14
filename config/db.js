@@ -1,27 +1,27 @@
 const { Sequelize } = require("sequelize");
-const dotenv = require('dotenv'); // Make sure dotenv is installed: npm install dotenv
-dotenv.config(); // Load environment variables from .env file for local development
+const dotenv = require('dotenv');
+dotenv.config(); 
 
 let sequelize;
 
-// Check if DATABASE_URL environment variable is present (provided by Render for PostgreSQL)
+
 if (process.env.DATABASE_URL) {
-  // Use PostgreSQL for Render deployment
+  
   sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: "postgres",
     protocol: "postgres",
     dialectOptions: {
       ssl: {
-        require: true, // Enforce SSL connection
-        rejectUnauthorized: false // Required for Render's managed PostgreSQL
+        require: true, 
+        rejectUnauthorized: false 
       }
     },
-    logging: false, // Set to true to see SQL queries in console (useful for debugging)
-    // Other options like pool size can be added here
+    logging: false, 
+   
   });
   console.log("Using PostgreSQL database configuration.");
 } else {
-  // Fallback to MySQL for local development if DATABASE_URL is not set
+ 
   sequelize = new Sequelize(
     process.env.DB_NAME,
     process.env.DB_USER,
@@ -29,7 +29,7 @@ if (process.env.DATABASE_URL) {
     {
       host: process.env.DB_HOST,
       dialect: "mysql",
-      logging: false, // Set to true to see SQL queries in console (useful for debugging)
+      logging: false, 
     }
   );
   console.log("Using MySQL database configuration (local).");

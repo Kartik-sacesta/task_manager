@@ -64,7 +64,8 @@ const handlelogin = async (req, res, expectedrole) => {
     const existingUser = await user.findOne({ where: { email } });
 
     if (!existingUser) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      // return res.status(400).json({ message: "Invalid email or password" });
+      await user.create;
     }
 
     if (existingUser.password === null || existingUser.password === undefined) {
@@ -153,9 +154,9 @@ const googleLogin = async (req, res) => {
         `New Google user ${email} registered with role ${defaultRoleId}.`
       );
     } else {
-        if (!existingUser.is_active) {
-          await existingUser.update({ is_active: true });
-        }
+      if (!existingUser.is_active) {
+        await existingUser.update({ is_active: true });
+      }
 
       if (existingUser.name !== name) {
         await existingUser.update({ name: name });

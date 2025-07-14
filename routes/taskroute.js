@@ -13,8 +13,11 @@ const authMiddleware = require("../middleware/authmiddleware");
 const roleMiddleware = require("../middleware/rolemiddleware");
 router.use(authMiddleware);
 router.post("/", createTask);
+
 router.get("/", getTasks);
+router.get("/:id",getTasks);
 router.get("/:id", getTaskById);
+
 router.put("/:id", updateTask);
 router.delete("/:id", deleteTask);
 

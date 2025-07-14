@@ -1,9 +1,17 @@
+const SubCategory = require("../model/SubCategory");
 const Task = require("../model/Task");
 const User = require("../model/User");
-const { Op, fn, col } = require("sequelize");
+const { Op, fn, col, where } = require("sequelize");
 
 const createTask = async (req, res) => {
-  const { title, description, expried_date, status, priority } = req.body;
+  const {
+    title,
+    description,
+    expried_date,
+    status,
+    priority,
+    sub_category_id,
+  } = req.body;
 
   if (!title) {
     return res
@@ -19,6 +27,7 @@ const createTask = async (req, res) => {
       expried_date,
       status: status || "pending",
       priority,
+      sub_category_id,
     });
 
     res.status(201).json(newTask);
@@ -29,14 +38,50 @@ const createTask = async (req, res) => {
 };
 
 const getTasks = async (req, res) => {
+  const { category_id } = req.query;
+  const { id } = req.params;
+  
   try {
-    // const userId = req.user.id;
+    // Case 1: If id is provided, get tasks by sub_category_id
+    if (id) {
+      const tasks = await Task.findAll({
+        where: { is_active: true, sub_category_id: id },
+        order: [["createdAt", "DESC"]],
+      });
+      return res.status(200).json(tasks);
+    }
+    
+    // Case 2: If category_id is provided, get tasks by category
+    if (category_id) {
+      const subCategories = await SubCategory.findAll({
+        where: { category_id },
+        attributes: ["id"],
+      });
+      
+      console.log(subCategories);
+      
+      // Extract the IDs from the subcategories
+      const subCategoryIds = subCategories.map(subCat => subCat.id);
+      
+      const tasks = await Task.findAll({
+        where: { 
+          is_active: true, 
+          sub_category_id: subCategoryIds 
+        },
+        order: [["createdAt", "DESC"]],
+      });
+      
+      return res.status(200).json(tasks);
+    }
+    
+    // Case 3: Default case - get all active tasks
     const tasks = await Task.findAll({
       where: { is_active: true },
       order: [["createdAt", "DESC"]],
     });
 
-    res.status(200).json(tasks);
+    return res.status(200).json(tasks);
+    
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error", error: error.message });
