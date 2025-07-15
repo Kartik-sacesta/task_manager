@@ -40,9 +40,8 @@ const createTask = async (req, res) => {
 const getTasks = async (req, res) => {
   const { category_id } = req.query;
   const { id } = req.params;
-  
+
   try {
-    // Case 1: If id is provided, get tasks by sub_category_id
     if (id) {
       const tasks = await Task.findAll({
         where: { is_active: true, sub_category_id: id },
@@ -50,30 +49,28 @@ const getTasks = async (req, res) => {
       });
       return res.status(200).json(tasks);
     }
-    
-    // Case 2: If category_id is provided, get tasks by category
+
     if (category_id) {
       const subCategories = await SubCategory.findAll({
         where: { category_id },
         attributes: ["id"],
       });
-      
+
       console.log(subCategories);
-      
-      // Extract the IDs from the subcategories
-      const subCategoryIds = subCategories.map(subCat => subCat.id);
-      
+
+      const subCategoryIds = subCategories.map((subCat) => subCat.id);
+
       const tasks = await Task.findAll({
-        where: { 
-          is_active: true, 
-          sub_category_id: subCategoryIds 
+        where: {
+          is_active: true,
+          sub_category_id: subCategoryIds,
         },
         order: [["createdAt", "DESC"]],
       });
-      
+
       return res.status(200).json(tasks);
     }
-    
+
     // Case 3: Default case - get all active tasks
     const tasks = await Task.findAll({
       where: { is_active: true },
@@ -81,7 +78,6 @@ const getTasks = async (req, res) => {
     });
 
     return res.status(200).json(tasks);
-    
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error", error: error.message });
@@ -143,7 +139,7 @@ const getTaskAnalytics = async (req, res) => {
           [Op.lt]: now,
         },
         status: {
-          [Op.notIn]: ["completed", "cancelled"],
+          [Op.notIn]: ["completed"],
         },
         is_active: true,
       },
@@ -157,7 +153,7 @@ const getTaskAnalytics = async (req, res) => {
           [Op.between]: [now, sevenDaysFromNow],
         },
         status: {
-          [Op.notIn]: ["completed", "cancelled"],
+          [Op.notIn]: ["completed"],
         },
         is_active: true,
       },
