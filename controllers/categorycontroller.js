@@ -27,12 +27,10 @@ const createCategory = async (req, res) => {
     const existingCategory = await Category.findOne({ where: { name } });
 
     if (existingCategory) {
-      return res
-        .status(409)
-        .json({
-          success: false,
-          message: "Category with this name already exists.",
-        });
+      return res.status(409).json({
+        success: false,
+        message: "Category with this name already exists.",
+      });
     }
 
     const newCategory = await Category.create({
@@ -40,13 +38,11 @@ const createCategory = async (req, res) => {
       description,
     });
 
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "Category created successfully.",
-        category: newCategory,
-      });
+    res.status(201).json({
+      success: true,
+      message: "Category created successfully.",
+      category: newCategory,
+    });
   } catch (error) {
     handleError(res, error, "Error creating category.");
   }
@@ -93,12 +89,10 @@ const updateCategory = async (req, res) => {
         },
       });
       if (existingCategory) {
-        return res
-          .status(409)
-          .json({
-            success: false,
-            message: "Category with this name already exists.",
-          });
+        return res.status(409).json({
+          success: false,
+          message: "Category with this name already exists.",
+        });
       }
     }
 
@@ -109,13 +103,11 @@ const updateCategory = async (req, res) => {
       is_active: is_active !== undefined ? is_active : category.is_active,
     });
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Category updated successfully.",
-        category,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Category updated successfully.",
+      category,
+    });
   } catch (error) {
     handleError(res, error, "Error updating category.");
   }
@@ -127,12 +119,10 @@ const softDeleteCategory = async (req, res) => {
     const category = await Category.findByPk(id);
 
     if (!category || category.is_deleted) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "Category not found or already deleted.",
-        });
+      return res.status(404).json({
+        success: false,
+        message: "Category not found or already deleted.",
+      });
     }
 
     await category.update({ is_deleted: true });
@@ -163,13 +153,11 @@ const restoreCategory = async (req, res) => {
     }
 
     await category.update({ is_deleted: false, deletedAt: null });
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Category restored successfully.",
-        category,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Category restored successfully.",
+      category,
+    });
   } catch (error) {
     handleError(res, error, "Error restoring category.");
   }

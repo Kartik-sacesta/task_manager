@@ -56,7 +56,7 @@ const getTasks = async (req, res) => {
         attributes: ["id"],
       });
 
-      console.log(subCategories);
+      //  console.log(subCategories);
 
       const subCategoryIds = subCategories.map((subCat) => subCat.id);
 
@@ -94,13 +94,13 @@ const getTaskAnalytics = async (req, res) => {
       where: { is_active: true },
       raw: true,
     });
-    console.log(statusCounts);
+    // console.log(statusCounts);
 
     analyticsData.statusSummary = {};
     statusCounts.forEach((item) => {
       analyticsData.statusSummary[item.status] = parseInt(item.count, 10);
     });
-    console.log(analyticsData);
+    //  console.log(analyticsData);
 
     const allStatuses = ["pending", "in-progress", "completed"];
     allStatuses.forEach((status) => {
@@ -290,7 +290,7 @@ const deleteTask = async (req, res) => {
     if (!task) {
       return res.status(404).json({ message: "Task not found" });
     }
-    await task.destroy();
+    // await task.destroy();
     await task.update({ is_active: false });
     res
       .status(200)

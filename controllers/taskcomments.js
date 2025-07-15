@@ -50,7 +50,7 @@ const deleteTaskComments = async (req, res) => {
 
   try {
     const user_id = req.user.id;
-    console.log(user_id);
+    //  console.log(user_id);
     const task_comments = await Task_Comments.findOne({
       where: { id, is_active: true, created_by: user_id },
     });
@@ -61,7 +61,7 @@ const deleteTaskComments = async (req, res) => {
           "Task Comment not found or you are not authorized to delete it",
       });
     }
-    await task_comments.destroy();
+    // await task_comments.destroy();
     await task_comments.update({ is_active: false });
     res.status(200).json({ message: "Task Comments deleted successfully " });
   } catch (error) {

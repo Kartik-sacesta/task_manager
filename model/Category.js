@@ -1,6 +1,5 @@
-
 const { DataTypes } = require("sequelize");
-const { sequelize } = require("../config/db"); 
+const { sequelize } = require("../config/db");
 
 const Category = sequelize.define(
   "Category",
@@ -13,7 +12,7 @@ const Category = sequelize.define(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true, 
+      unique: true,
     },
     description: {
       type: DataTypes.TEXT,
@@ -21,23 +20,19 @@ const Category = sequelize.define(
     },
     is_active: {
       type: DataTypes.BOOLEAN,
-      defaultValue: true, 
+      defaultValue: true,
     },
     is_deleted: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false, 
+      defaultValue: false,
     },
   },
   {
-    timestamps: true, 
+    timestamps: true,
     tableName: "categories",
-    paranoid: true, 
+    paranoid: true,
     deletedAt: "deletedAt",
   }
 );
 
 module.exports = Category;
-
-
-
-

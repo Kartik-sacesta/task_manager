@@ -15,7 +15,7 @@ router.use(authMiddleware);
 router.post("/", createTask);
 
 router.get("/", getTasks);
-router.get("/:id",getTasks);
+router.get("/:id", getTasks);
 router.get("/search/:id", getTaskById);
 
 router.put("/:id", updateTask);

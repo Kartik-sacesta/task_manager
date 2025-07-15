@@ -26,12 +26,10 @@ const createSubcategory = async (req, res) => {
     const existingSubcategory = await Subcategory.findOne({ where: { name } });
 
     if (existingSubcategory) {
-      return res
-        .status(409)
-        .json({
-          success: false,
-          message: "Sub Category with this name already exists.",
-        });
+      return res.status(409).json({
+        success: false,
+        message: "Sub Category with this name already exists.",
+      });
     }
 
     const newSubcategory = await Subcategory.create({
@@ -40,13 +38,11 @@ const createSubcategory = async (req, res) => {
       category_id,
     });
 
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "Sub Category created successfully.",
-        Subcategory: newSubcategory,
-      });
+    res.status(201).json({
+      success: true,
+      message: "Sub Category created successfully.",
+      Subcategory: newSubcategory,
+    });
   } catch (error) {
     handleError(res, error, "Error creating category.");
   }
@@ -68,10 +64,10 @@ const getAllSubcategories = async (req, res) => {
 };
 
 const getAllSubcategoriesById = async (req, res) => {
-    const {id}=req.params;
+  const { id } = req.params;
   try {
     const subcategories = await Subcategory.findAll({
-      where: { is_deleted: false ,category_id:id},
+      where: { is_deleted: false, category_id: id },
       order: [["name", "ASC"]],
     });
 
@@ -82,7 +78,6 @@ const getAllSubcategoriesById = async (req, res) => {
     handleError(res, error, "Error fetching categories.");
   }
 };
-
 
 const updateSubcategory = async (req, res) => {
   try {
@@ -110,12 +105,10 @@ const updateSubcategory = async (req, res) => {
         },
       });
       if (existingCategory) {
-        return res
-          .status(409)
-          .json({
-            success: false,
-            message: "Category with this name already exists.",
-          });
+        return res.status(409).json({
+          success: false,
+          message: "Category with this name already exists.",
+        });
       }
     }
 
@@ -126,13 +119,11 @@ const updateSubcategory = async (req, res) => {
       is_active: is_active !== undefined ? is_active : category.is_active,
     });
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Category updated successfully.",
-        category,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Category updated successfully.",
+      category,
+    });
   } catch (error) {
     handleError(res, error, "Error updating category.");
   }
@@ -144,12 +135,10 @@ const softDeleteSubcategory = async (req, res) => {
     const category = await Subcategory.findByPk(id);
 
     if (!category || category.is_deleted) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "Category not found or already deleted.",
-        });
+      return res.status(404).json({
+        success: false,
+        message: "Category not found or already deleted.",
+      });
     }
 
     await category.update({ is_deleted: true });
@@ -162,42 +151,11 @@ const softDeleteSubcategory = async (req, res) => {
   }
 };
 
-const restoreSubcategory = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const category = await Subcategory.findByPk(id, { paranoid: false });
-
-    if (!category) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Category not found." });
-    }
-    if (!category.is_deleted) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Category is not soft-deleted." });
-    }
-
-    await category.update({ is_deleted: false, deletedAt: null });
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Category restored successfully.",
-        category,
-      });
-  } catch (error) {
-    handleError(res, error, "Error restoring category.");
-  }
-};
-
 module.exports = {
-createSubcategory,
-getAllSubcategories,
-updateSubcategory,
-softDeleteSubcategory,
-restoreSubcategory,
-getAllSubcategoriesById
+  createSubcategory,
+  getAllSubcategories,
+  updateSubcategory,
+  softDeleteSubcategory,
 
+  getAllSubcategoriesById,
 };

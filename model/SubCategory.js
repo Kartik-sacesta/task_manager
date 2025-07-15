@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
-const { sequelize } = require("../config/db"); 
-const Category = require("./Category"); 
+const { sequelize } = require("../config/db");
+const Category = require("./Category");
 
 const SubCategory = sequelize.define(
   "SubCategory",
@@ -22,24 +22,24 @@ const SubCategory = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "categories", 
+        model: "categories",
         key: "id",
       },
-      onDelete: "CASCADE", 
+      onDelete: "CASCADE",
     },
     is_active: {
       type: DataTypes.BOOLEAN,
-      defaultValue: true, 
+      defaultValue: true,
     },
     is_deleted: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false, 
+      defaultValue: false,
     },
   },
   {
-    timestamps: true, 
+    timestamps: true,
     tableName: "sub_categories",
-    paranoid: true, 
+    paranoid: true,
     deletedAt: "deletedAt",
   }
 );

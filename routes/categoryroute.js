@@ -4,11 +4,10 @@ const router = express.Router();
 const {
   createCategory,
   getAllCategories,
-  
+
   softDeleteCategory,
   restoreCategory,
   updateCategory,
-
 } = require("../controllers/categorycontroller");
 
 router.post("/", createCategory);

@@ -231,8 +231,6 @@ const getalluser = async (req, res) => {
 
     const userIds = userRoleDataForUsers.map((ur) => ur.user_id);
     const adminIds = userRoleDataForAdmins.map((ur) => ur.user_id);
-    const user2 = await user.findOne({ where: { id: 2 } });
-    console.log(user2);
 
     const [
       activeUsersCount,
@@ -355,7 +353,7 @@ const tokenvalidate = async (req, res) => {
     if (!role) {
       return res.status(403).json({ message: "Role not found or inactive" });
     }
-    console.log(role);
+    // console.log(role);
     const roletitle = role.title;
     const username = userdata.name;
     return res
@@ -412,5 +410,5 @@ module.exports = {
   taskByUserId,
   getalluser,
   adminlogin,
-  googleLogin, // Export the new function
+  googleLogin,
 };
