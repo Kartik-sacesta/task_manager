@@ -22,7 +22,6 @@
     "googleapis": "^152.0.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.1",
-    "nodemon": "^3.1.10",
     "pg": "^8.16.3",
     "router": "^2.2.0",
     "sequelize": "^6.37.7",
@@ -30,6 +29,7 @@
     "whatwg-url": "^5.0.0"
   },
   "devDependencies": {
+    "nodemon": "^3.1.10",
     "sequelize-cli": "^6.6.3"
   }
 }
