@@ -38,14 +38,20 @@ const createTask = async (req, res) => {
 };
 
 const getTasks = async (req, res) => {
-  const { category_id } = req.query;
+  const { category_id, page, limit } = req.query;
   const { id } = req.params;
 
   try {
+    const pageNumber = parseInt(page) || 1;
+    const itemsPerPage = parseInt(limit) || 10;
+    const offset = (pageNumber - 1) * itemsPerPage;
+   
     if (id) {
       const tasks = await Task.findAll({
         where: { is_active: true, sub_category_id: id },
         order: [["createdAt", "DESC"]],
+        limit: itemsPerPage,
+        offset: offset,
       });
       return res.status(200).json(tasks);
     }
@@ -65,6 +71,8 @@ const getTasks = async (req, res) => {
           is_active: true,
           sub_category_id: subCategoryIds,
         },
+        limit: itemsPerPage,
+        offset: offset,
         order: [["createdAt", "DESC"]],
       });
 
@@ -75,6 +83,8 @@ const getTasks = async (req, res) => {
     const tasks = await Task.findAll({
       where: { is_active: true },
       order: [["createdAt", "DESC"]],
+      limit: itemsPerPage,
+      offset: offset,
     });
 
     return res.status(200).json(tasks);

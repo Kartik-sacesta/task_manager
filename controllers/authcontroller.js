@@ -10,6 +10,7 @@ const { createUserRole } = require("../service/user_role");
 const User_Role = require("../model/User_Role");
 
 const admin = require("../config/firebaseAdmin");
+const { trace } = require("../routes/authroute");
 const register = async (req, res) => {
   const { name, email, password, title } = req.body;
   if (!name || !email || !password) {
@@ -34,7 +35,7 @@ const register = async (req, res) => {
     if (!newUser) {
       return res.status(500).json({ message: "User registration failed" });
     }
-    const roleData = 1;
+    const roleData = 2;
     console.log("role id", roleData, newUser.id);
 
     createUserRole(newUser.id, roleData)
@@ -198,12 +199,19 @@ const googleLogin = async (req, res) => {
 };
 
 const getuser = async (req, res) => {
+  const { page, limit } = req.query;
   try {
+    const pageNumber = parseInt(page) || 1;
+    const itemsPerPage = parseInt(limit) || 10;
+    const offset = (pageNumber - 1) * itemsPerPage;
     const userrole = await userRole.findAll({ where: { role_id: 2 } });
     const userIds = userrole.map((ur) => ur.user_id);
     const users = await user.findAll({
       where: { is_active: true, id: userIds },
+      limit: itemsPerPage,
+      offset: offset,
     });
+    
 
     res.status(200).json(users);
   } catch (error) {

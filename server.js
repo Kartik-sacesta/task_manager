@@ -12,7 +12,7 @@ const taskcommentsroute = require("./routes/taskcommentsroute");
 const categorycontroller = require("./routes/categoryroute");
 const subcategoryroutes = require("./routes/subcategoryroute");
 const defineAssociations = require("./model/associations");
-defineAssociations();
+defineAssociations(); 
 connectDB();
 sequelize.sync({ force: false });
 
@@ -46,3 +46,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+ 

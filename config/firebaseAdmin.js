@@ -7,7 +7,7 @@ try {
   console.log("Firebase Admin SDK initialized successfully.");
 } catch (error) {
   if (!admin.apps.length) {
-    console.error("Error initializing Firebase Admin SDK:", error);
+    console.error("Error initializing Firebase Admin SDK:");
   } else {
     console.log("Firebase Admin SDK already initialized.");
   }
