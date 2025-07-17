@@ -19,13 +19,16 @@
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "firebase-admin": "^13.4.0",
+    "generate-password": "^1.7.1",
     "googleapis": "^152.0.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.1",
+    "nodemailer": "^7.0.5",
     "pg": "^8.16.3",
     "router": "^2.2.0",
     "sequelize": "^6.37.7",
     "sqlite3": "^5.1.7",
+    "uuid": "^11.1.0",
     "whatwg-url": "^5.0.0"
   },
   "devDependencies": {

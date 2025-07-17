@@ -4,13 +4,24 @@ const userRole = require("../model/User_Role");
 const Task = require("../model/Task");
 const bcrypt = require("bcrypt");
 const jsonwebtoken = require("jsonwebtoken");
-const { Op, where } = require("sequelize");
+const { Op} = require("sequelize");
+
+const transporter = require("../config/emailConfig");
+
+const crypto = require("crypto");
 
 const { createUserRole } = require("../service/user_role");
 const User_Role = require("../model/User_Role");
 
 const admin = require("../config/firebaseAdmin");
-const { trace } = require("../routes/authroute");
+
+const generator = require("generate-password");
+
+const password = generator.generate({
+  length: 7,
+  numbers: true,
+});
+
 const register = async (req, res) => {
   const { name, email, password, title } = req.body;
   if (!name || !email || !password) {
@@ -135,10 +146,13 @@ const googleLogin = async (req, res) => {
     let existingUser = await user.findOne({ where: { email } });
 
     if (!existingUser) {
+      const generatedPassword = crypto.randomBytes(8).toString("hex");
+      const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+
       existingUser = await user.create({
         name: name || email.split("@")[0],
         email: email,
-        password: null,
+        password: hashedPassword,
         is_active: true,
         google_uid: uid,
       });
@@ -154,6 +168,32 @@ const googleLogin = async (req, res) => {
       console.log(
         `New Google user ${email} registered with role ${defaultRoleId}.`
       );
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: existingUser.email,
+        subject: "Welcome to Our Service! Your Account Details",
+        html: `
+          <p>Dear ${existingUser.name || "User"},</p>
+          <p>Welcome to our service! We're thrilled to have you.</p>
+          <p>Your account has been successfully created. Here are your login details:</p>
+          <p><strong>Email:</strong> ${existingUser.email}</p>
+          <p><strong>Password:</strong> ${generatedPassword}</p>
+          <p>For security reasons, we highly recommend changing your password after your first login.</p>
+          <p>Thank you for joining us!</p>
+          <p>The Team</p>
+        `,
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log(`Welcome email sent to ${existingUser.email}`);
+      } catch (emailError) {
+        console.error(
+          `Error sending welcome email to ${existingUser.email}:`,
+          emailError
+        );
+      }
     } else {
       if (!existingUser.is_active) {
         await existingUser.update({ is_active: true });
@@ -211,7 +251,6 @@ const getuser = async (req, res) => {
       limit: itemsPerPage,
       offset: offset,
     });
-    
 
     res.status(200).json(users);
   } catch (error) {

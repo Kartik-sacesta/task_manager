@@ -1,4 +1,8 @@
+const { where } = require("sequelize");
 const Task_Comments = require("../model/Task_Comments");
+const User = require("../model/User");
+const User_Role = require("../model/User_Role");
+const Role = require("../model/Role");
 
 const createTaskComments = async (req, res) => {
   try {
@@ -25,22 +29,52 @@ const createTaskComments = async (req, res) => {
 const getTaskComments = async (req, res) => {
   const { id } = req.params;
   try {
-    const userId = req.user.id;
-    const taskcomment = await Task_Comments.findAll({
+    const taskComments = await Task_Comments.findAll({
       where: { task_id: id, is_active: true },
-
       order: [["createdAt", "DESC"]],
     });
 
-    if (!taskcomment) {
+    if (!taskComments || taskComments.length === 0) {
       return res.status(404).json({
         message:
-          "Task Comment not found or you are not authorized to delete it",
+          "No task comments found ",
       });
     }
-    res.status(200).json(taskcomment);
+
+    const commentsWithUserData = await Promise.all(
+      taskComments.map(async (comment) => {
+        const userData = await User.findOne({
+          where: { id: comment.created_by },
+        });
+        let userName = null;
+        let userRole = null;
+
+        if (userData) {
+          userName = userData.name;
+          const userRoleData = await User_Role.findOne({
+            where: { user_id: userData.id },
+          });
+          if (userRoleData) {
+            const roleData = await Role.findOne({
+              where: { id: userRoleData.role_id },
+            });
+            if (roleData) {
+              userRole = roleData.title;
+            }
+          }
+        }
+
+        return {
+          ...comment.toJSON(),
+          created_by_name: userName,
+          created_by_role: userRole,
+        };
+      })
+    );
+
+    res.status(200).json(commentsWithUserData);
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching task comments:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
