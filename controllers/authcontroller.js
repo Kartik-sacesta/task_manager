@@ -196,7 +196,9 @@ const googleLogin = async (req, res) => {
       }
     } else {
       if (!existingUser.is_active) {
-        await existingUser.update({ is_active: true });
+       return res
+        .status(401)
+        .json({ message: "User Inactive." });
       }
 
       if (existingUser.name !== name) {

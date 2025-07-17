@@ -89,43 +89,43 @@ const updateSubcategory = async (req, res) => {
     if (!category || category.is_deleted) {
       return res
         .status(404)
-        .json({ success: false, message: "Category not found or is deleted." });
+        .json({
+          success: false,
+          message: "Sub Category not found or is deleted.",
+        });
     }
-
     if (name !== undefined && name !== category.name) {
-      const existingCategory = await Subcategory.findOne({
-        where: {
-          name: {
-            [Op.Like]: name,
-          },
-          id: {
-            [Op.ne]: id,
-          },
-          is_deleted: false,
-        },
+      const existingSubcategory = await Subcategory.findOne({
+        where: { name },
       });
-      if (existingCategory) {
+
+      if (existingSubcategory && existingSubcategory.id !== category.id) {
         return res.status(409).json({
           success: false,
-          message: "Category with this name already exists.",
+          message: "Sub Category with this name already exists.",
         });
       }
     }
 
-    await Subcategory.update({
-      name: name !== undefined ? name : category.name,
-      description:
-        description !== undefined ? description : category.description,
-      is_active: is_active !== undefined ? is_active : category.is_active,
-    });
+    if (name !== undefined) {
+      category.name = name;
+    }
+    if (description !== undefined) {
+      category.description = description;
+    }
+    if (is_active !== undefined) {
+      category.is_active = is_active;
+    }
+
+    await category.save();
 
     res.status(200).json({
       success: true,
-      message: "Category updated successfully.",
-      category,
+      message: "Sub Category updated successfully.",
+      category: category,
     });
   } catch (error) {
-    handleError(res, error, "Error updating category.");
+    handleError(res, error, "Error updating sub category.");
   }
 };
 
