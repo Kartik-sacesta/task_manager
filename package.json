@@ -25,6 +25,7 @@
     "mysql2": "^3.14.1",
     "nodemailer": "^7.0.5",
     "pg": "^8.16.3",
+    "razorpay": "^2.9.6",
     "router": "^2.2.0",
     "sequelize": "^6.37.7",
     "sqlite3": "^5.1.7",

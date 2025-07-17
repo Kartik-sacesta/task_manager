@@ -11,7 +11,9 @@ const rolecontroller = require("./routes/roleroute");
 const taskcommentsroute = require("./routes/taskcommentsroute");
 const categorycontroller = require("./routes/categoryroute");
 const subcategoryroutes = require("./routes/subcategoryroute");
+const razorpayroutes=require("./routes/razorpayroute");
 const defineAssociations = require("./model/associations");
+
 defineAssociations(); 
 connectDB();
 sequelize.sync({ force: false });
@@ -41,6 +43,7 @@ app.use("/role", rolecontroller);
 app.use("/taskcomments", taskcommentsroute);
 app.use("/category", categorycontroller);
 app.use("/subcategory", subcategoryroutes);
+app.use("/payment",razorpayroutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
